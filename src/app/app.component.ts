@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { SnowGlobeComponent } from "./snow-globe/snow-globe.component";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, SnowGlobeComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
