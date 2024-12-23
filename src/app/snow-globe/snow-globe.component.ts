@@ -1,5 +1,7 @@
 import { Component, HostListener } from '@angular/core';
-
+function randomIntFromInterval(min:number, max:number) { // min and max included
+  return Math.floor(Math.random() * (max - min) + min);
+}
 @Component({
   selector: 'app-snow-globe',
   standalone: true,
@@ -9,7 +11,7 @@ import { Component, HostListener } from '@angular/core';
 export class SnowGlobeComponent {
   canvas!: HTMLCanvasElement;
   ctx!: CanvasRenderingContext2D;
-  snowParticles: { x: number; y: number; speed: number; state: boolean }[] = [];
+  snowParticles: { x: number; y: number; speed: number; state: boolean; angle: number; rotationSpeed: number }[] = [];
   maxSnowflakes = 5000; // Limit the number of snowflakes
   groundLevel = 0; // Dynamically calculated
   snowPile: Map<number, number> = new Map(); // Tracks accumulated snow at specific x positions
@@ -18,11 +20,14 @@ export class SnowGlobeComponent {
     this.initCanvas();
     this.addSnowParticles();
     this.animate();
+
+    // Start listening for device motion events
+    window.addEventListener('devicemotion', this.handleShake.bind(this));
   }
 
   initCanvas() {
     this.canvas = document.createElement('canvas');
-    this.canvas.style.backgroundColor = 'black'
+    this.canvas.style.backgroundColor = 'black';
     this.ctx = this.canvas.getContext('2d')!;
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
@@ -39,6 +44,8 @@ export class SnowGlobeComponent {
         y: Math.random() * this.canvas.height - this.canvas.height,
         speed: 0.5 + Math.random() * 1.5,
         state: true,
+        angle: Math.random() * 2 * Math.PI, // Random angle for twisting
+        rotationSpeed: 0.02 + Math.random() * 0.05 // Random rotation speed
       });
     }
   }
@@ -53,6 +60,8 @@ export class SnowGlobeComponent {
 
       if (particle.state) {
         particle.y += particle.speed;
+        particle.x += Math.sin(particle.angle) * 0.5; // Simulate horizontal drifting
+        particle.angle += particle.rotationSpeed; // Update angle for twisting effect
 
         const targetHeight = this.groundLevel - this.getPileHeight(particle.x);
 
@@ -62,10 +71,8 @@ export class SnowGlobeComponent {
           this.addToPile(particle.x);
         }
 
-
         this.ctx.fillStyle = 'white';
         this.ctx.fillRect(particle.x, particle.y, 4, 4);
-
       }
     }
 
@@ -100,6 +107,52 @@ export class SnowGlobeComponent {
       this.snowPile.set(roundedX, currentHeight + 4);
     }
   }
+
+  handleShake(event: DeviceMotionEvent) {
+    // Use acceleration to determine if the device was shaken
+    const acceleration = event.acceleration;
+    if (acceleration) {
+      const shakeThreshold = 15; // Adjust threshold as needed
+      if (
+        Math.abs(acceleration.x!) > shakeThreshold ||
+        Math.abs(acceleration.y!) > shakeThreshold ||
+        Math.abs(acceleration.z!) > shakeThreshold
+      ) {
+        this.clearSnowPiles();
+        this.modifyParticleDynamics();
+      }
+    }
+  }
+
+  clearSnowPiles() {
+    this.snowPile.clear();
+  }
+
+  modifyParticleDynamics() {
+    // Apply randomized velocity shifts to simulate a realistic twist effect
+    for (const particle of this.snowParticles) {
+      const velocityChangeX = (Math.random() - 0.5) * 4; // Random horizontal velocity
+      const velocityChangeY = (Math.random() - 0.5) * 4; // Random vertical velocity
+
+      particle.speed = 0.5 + Math.random() * 1.5; // Randomize falling speed
+      particle.angle = Math.random() * 2 * Math.PI; // Randomize twisting direction
+      particle.rotationSpeed = 0.02 + Math.random() * 0.05; // Randomize rotation speed
+
+      // Adjust particle position slightly to simulate shaking motion
+      particle.x = randomIntFromInterval(0, this.canvas.width);
+      particle.y =randomIntFromInterval(0, this.canvas.height);
+
+      // Keep particles within the canvas bounds
+      if (particle.x < 0) particle.x = 0;
+      if (particle.x > this.canvas.width) particle.x = this.canvas.width;
+      if (particle.y < 0) particle.y = 0;
+      if (particle.y > this.canvas.height) particle.y = this.canvas.height;
+
+      particle.state = true; // Keep particles active
+    }
+  }
+
+
 
   @HostListener('window:resize')
   onWindowResize() {
