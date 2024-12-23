@@ -44,7 +44,7 @@ export class SnowGlobeComponent {
     for (let i = 0; i < this.maxSnowflakes; i++) {
       this.snowParticles.push({
         x: Math.random() * this.canvasWidth(),
-        y: Math.random() * this.canvasHeight() - this.canvasHeight(),
+        y: Math.random() * this.canvasHeight(),
         speed: 0.5 + Math.random() * 1.5,
         state: true,
         angle: Math.random() * 2 * Math.PI, // Random angle for twisting

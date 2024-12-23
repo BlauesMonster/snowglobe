@@ -4,7 +4,7 @@ import { SnowGlobeComponent } from "./snow-globe/snow-globe.component";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, SnowGlobeComponent],
+  imports: [SnowGlobeComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
