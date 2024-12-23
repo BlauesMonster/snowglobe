@@ -31,6 +31,37 @@ canvas {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1; /* Keep canvas above the background */
+  z-index: 2; /* Keep canvas above the background */
   pointer-events: none; /* Prevent interference with user interaction */
+}
+/* Styled Merry Christmas label */
+.merry-christmas-label {
+  position: absolute;
+  z-index: 1; /* Above everything */
+  font-family: 'Dancing Script', cursive; /* Festive font */
+  font-size: 3.5rem; /* Bigger size for emphasis */
+  color: #2ecc71; /* Festive green */
+  font-weight: bold; /* Thicker text */
+  text-shadow:
+    0 0 10px rgba(46, 204, 113, 1), /* Intense green glow */
+    0 0 20px rgba(46, 204, 113, 0.8),
+    0 0 30px rgba(46, 204, 113, 0.6);
+  text-align: center;
+  animation: intenseGlow 1.5s infinite alternate; /* Intense glowing animation */
+}
+
+/* Glow animation for the text */
+@keyframes intenseGlow {
+  from {
+    text-shadow:
+      0 0 10px rgba(46, 204, 113, 1),
+      0 0 20px rgba(46, 204, 113, 0.8),
+      0 0 30px rgba(46, 204, 113, 0.6);
+  }
+  to {
+    text-shadow:
+      0 0 20px rgba(46, 204, 113, 1),
+      0 0 40px rgba(46, 204, 113, 0.9),
+      0 0 60px rgba(46, 204, 113, 0.8);
+  }
 }
