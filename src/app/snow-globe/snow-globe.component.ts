@@ -32,10 +32,11 @@ export class SnowGlobeComponent {
 
   ngOnInit() {
     this.addSnowParticles();
-    this.animate();
+
 
     // Start listening for device motion events
     window.addEventListener('devicemotion', this.handleShake.bind(this));
+    requestAnimationFrame(this.animate.bind(this));
   }
 
 
@@ -52,36 +53,59 @@ export class SnowGlobeComponent {
     }
   }
 
-  animate() {
-    requestAnimationFrame(() => this.animate());
 
-    this.ctx().clearRect(0, 0, this.canvas().nativeElement.width, this.canvas().nativeElement.height);
+  private lastRender = 0; // Track last render time for throttling
+  animate(timestamp: number) {
+    if (timestamp - this.lastRender < 16) {
+      requestAnimationFrame(this.animate.bind(this));
+      return;
+    }
 
-    for (let i = 0; i < this.snowParticles.length; i++) {
-      const particle = this.snowParticles[i];
+    this.lastRender = timestamp;
+    const ctx = this.ctx();
 
-      if (particle.state) {
-        particle.y += particle.speed;
-        particle.x += Math.sin(particle.angle) * 0.5; // Simulate horizontal drifting
-        particle.angle += particle.rotationSpeed; // Update angle for twisting effect
+    if (ctx) {
+      const canvas = this.canvas().nativeElement;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const targetHeight = this.groundLevel() - this.getPileHeight(particle.x);
+      const groundLevel = this.canvasHeight();
+      const snowPile = this.snowPile;
 
-        if (particle.y >= targetHeight) {
-          particle.y = targetHeight;
-          particle.state = false;
-          this.addToPile(particle.x);
+      // Draw snow particles
+      ctx.fillStyle = 'white';
+      const particleBatch: Path2D[] = [];
+      for (const particle of this.snowParticles) {
+        if (particle.state) {
+          particle.y += particle.speed;
+          particle.x += Math.sin(particle.angle) * 0.5;
+          particle.angle += particle.rotationSpeed;
+
+          const targetHeight = groundLevel - (snowPile.get(Math.round(particle.x)) || 0);
+
+          if (particle.y >= targetHeight) {
+            particle.y = targetHeight;
+            particle.state = false;
+            this.addToPile(particle.x);
+          } else {
+            const path = new Path2D();
+            path.rect(particle.x, particle.y, 4, 4);
+            particleBatch.push(path);
+          }
         }
+      }
 
-        this.ctx().fillStyle = 'white';
-        this.ctx().fillRect(particle.x, particle.y, 4, 4);
+      // Render all particles in one batch
+      for (const path of particleBatch) {
+        ctx.fill(path);
+      }
+
+      // Draw accumulated snow pile
+      for (const [key, value] of snowPile.entries()) {
+        ctx.fillRect(key, groundLevel, 4, -value);
       }
     }
 
-    this.snowPile.forEach((value, key) => {
-      this.ctx().fillStyle = 'white';
-      this.ctx().fillRect(key, this.canvasHeight(), 4, -value);
-    });
+    requestAnimationFrame(this.animate.bind(this));
   }
 
   getPileHeight(x: number): number {
@@ -111,14 +135,13 @@ export class SnowGlobeComponent {
   }
 
   handleShake(event: DeviceMotionEvent) {
-    // Use acceleration to determine if the device was shaken
     const acceleration = event.acceleration;
     if (acceleration) {
-      const shakeThreshold = 15; // Adjust threshold as needed
+      const shakeThreshold = 15;
       if (
-        Math.abs(acceleration.x!) > shakeThreshold ||
-        Math.abs(acceleration.y!) > shakeThreshold ||
-        Math.abs(acceleration.z!) > shakeThreshold
+        Math.abs(acceleration.x || 0) > shakeThreshold ||
+        Math.abs(acceleration.y || 0) > shakeThreshold ||
+        Math.abs(acceleration.z || 0) > shakeThreshold
       ) {
         this.clearSnowPiles();
         this.modifyParticleDynamics();
@@ -131,24 +154,15 @@ export class SnowGlobeComponent {
   }
 
   modifyParticleDynamics() {
-    // Apply randomized velocity shifts to simulate a realistic twist effect
+    const canvasWidth = this.canvasWidth();
+    const canvasHeight = this.canvasHeight();
     for (const particle of this.snowParticles) {
-
-      particle.speed = 0.5 + Math.random() * 1.5; // Randomize falling speed
-      particle.angle = Math.random() * 2 * Math.PI; // Randomize twisting direction
-      particle.rotationSpeed = 0.02 + Math.random() * 0.05; // Randomize rotation speed
-
-      // Adjust particle position slightly to simulate shaking motion
-      particle.x = randomIntFromInterval(0, this.canvasWidth());
-      particle.y = randomIntFromInterval(0, this.canvasHeight());
-
-      // Keep particles within the canvas bounds
-      if (particle.x < 0) particle.x = 0;
-      if (particle.x > this.canvasWidth()) particle.x = this.canvasWidth();
-      if (particle.y < 0) particle.y = 0;
-      if (particle.y > this.canvasHeight()) particle.y = this.canvasHeight();
-
-      particle.state = true; // Keep particles active
+      particle.speed = 0.5 + Math.random() * 1.5;
+      particle.angle = Math.random() * 2 * Math.PI;
+      particle.rotationSpeed = 0.02 + Math.random() * 0.05;
+      particle.x = randomIntFromInterval(0, canvasWidth);
+      particle.y = randomIntFromInterval(0, canvasHeight);
+      particle.state = true;
     }
   }
 }

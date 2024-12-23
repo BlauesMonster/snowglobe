@@ -47,21 +47,4 @@ canvas {
     0 0 20px rgba(46, 204, 113, 0.8),
     0 0 30px rgba(46, 204, 113, 0.6);
   text-align: center;
-  animation: intenseGlow 1.5s infinite alternate; /* Intense glowing animation */
-}
-
-/* Glow animation for the text */
-@keyframes intenseGlow {
-  from {
-    text-shadow:
-      0 0 10px rgba(46, 204, 113, 1),
-      0 0 20px rgba(46, 204, 113, 0.8),
-      0 0 30px rgba(46, 204, 113, 0.6);
-  }
-  to {
-    text-shadow:
-      0 0 20px rgba(46, 204, 113, 1),
-      0 0 40px rgba(46, 204, 113, 0.9),
-      0 0 60px rgba(46, 204, 113, 0.8);
-  }
 }
