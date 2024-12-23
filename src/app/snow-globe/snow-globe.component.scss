@@ -1,3 +1,36 @@
-canvas{
-  background-color: black;
+
+
+/* Background image */
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('../../../public/img1.png'); /* Replace with your image path */
+  background-size: cover; /* Ensure the image covers the entire container */
+  background-position: center; /* Center the image */
+  z-index: 0; /* Send it behind the canvas */
+}
+
+/* Semi-transparent overlay for contrast */
+.background-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+}
+
+/* Canvas for snow animation */
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1; /* Keep canvas above the background */
+  pointer-events: none; /* Prevent interference with user interaction */
 }
