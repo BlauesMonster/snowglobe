@@ -12,7 +12,7 @@ export class SnowGlobeComponent {
   canvas!: HTMLCanvasElement;
   ctx!: CanvasRenderingContext2D;
   snowParticles: { x: number; y: number; speed: number; state: boolean; angle: number; rotationSpeed: number }[] = [];
-  maxSnowflakes = 5000; // Limit the number of snowflakes
+  maxSnowflakes = 7000; // Limit the number of snowflakes
   groundLevel = 0; // Dynamically calculated
   snowPile: Map<number, number> = new Map(); // Tracks accumulated snow at specific x positions
 
